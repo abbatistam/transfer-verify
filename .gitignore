@@ -1,0 +1,27 @@
+# Archivos y directorios generados por el entorno de desarrollo
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+.vscode/
+
+# Directorio virtualenv
+venv/
+
+# Archivo de configuración local
+.env
+
+# Logs y archivos temporales
+*.log
+*.swp
+*.tmp
+
+# Archivos de configuración de IDE
+/.idea/
+*.iml
+
+# Archivos de registro y almacenamiento de estado
+logs/
+*.sqlite3
