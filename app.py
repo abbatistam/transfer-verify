@@ -17,16 +17,10 @@ CORS(app)
 
 # Ruta para agregar un mensaje
 @app.route("/mensajes", methods=["POST"])
-@accepts("application/json", "text/plain")
 def agregar_mensaje():
-    if request.content_type not in ("application/json", "text/plain"):
-        return jsonify({"success": False, "error": "Formato no compatible"}), 400
-
     try:
-        if request.content_type == "application/json":
-            message_body = request.get_json()["message_body"]
-        elif request.content_type == "text/plain":
-            message_body = request.data.decode("utf-8")
+        # Procesar el cuerpo de la solicitud independientemente del tipo de contenido
+        message_body = request.get_data(as_text=True)
 
         mensaje = {
             "message_body": message_body,
@@ -39,7 +33,6 @@ def agregar_mensaje():
 
     except Exception as error:
         return jsonify({"success": False, "error": str(error)}), 400
-
     
 # Iniciar la aplicación Flask
 if __name__ == "__main__":
