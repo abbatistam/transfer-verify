@@ -17,42 +17,40 @@ messages_collection = db["messages"]
 CORS(app)
 
 def procesar_cadena(cadena_decodificada):
-    # Extraer el valor de "message_body" del JSON
-    match_mensaje = re.search(r'"message_body": "(.*?)"', cadena_decodificada)
-    if not match_mensaje:
-        return None  # Retornar None si no se encuentra el mensaje
-    
-    mensaje = match_mensaje.group(1)
-
-    # Decodificar el mensaje
-    mensaje_decodificado = mensaje.replace('+', ' ').replace('%28', '(').replace('%29', ')').replace('%0A', '\n').replace('%3A', ':')
-
-    # Buscar información en el mensaje usando expresiones regulares
-    match = re.search(r"Desde\s*:\s*([^()]+)\(([^()]+)\)\s*([\w\s]+)\s+(\d+)\s+de\s+([0-9.]+)\s+(\w+)\.\s*Nro\.\s+Transaccion\s+(\w+)", mensaje_decodificado)
-    
-    # Si no hay coincidencias, retornar None
-    if not match:
-        return None
-    
-    # Extraer la información
-    desde = match.group(1).strip()
-    nombre_de_contacto = match.group(2).strip()
-    informacion_transferencia = match.group(3).strip()
-    numero_de_cuenta = match.group(4)
-    cantidad_de_dinero = match.group(5)
-    moneda = match.group(6)
-    numero_de_transaccion = match.group(7)
+    try:
+        # Decodificar la cadena
+        mensaje_decodificado = unquote(cadena_decodificada)
         
-    # Devolver la información extraída
-    return {
-        "desde": desde,
-        "nombre_de_contacto": nombre_de_contacto,
-        "informacion_transferencia": informacion_transferencia,
-        "numero_de_cuenta": numero_de_cuenta,
-        "cantidad_de_dinero": cantidad_de_dinero,
-        "moneda": moneda,
-        "numero_de_transaccion": numero_de_transaccion
-    }
+        # Buscar información en el mensaje usando expresiones regulares
+        match = re.search(r"Desde\s*:\s*([^()]+)\(([^()]+)\)\s*([\w\s]+)\s+(\d+)\s+de\s+([0-9.]+)\s+(\w+)\.\s*Nro\.\s+Transaccion\s+(\w+)", mensaje_decodificado)
+        
+        # Si no hay coincidencias, retornar None
+        if not match:
+            return None
+        
+        # Extraer la información
+        desde = match.group(1).strip()
+        nombre_de_contacto = match.group(2).strip()
+        informacion_transferencia = match.group(3).strip()
+        numero_de_cuenta = match.group(4)
+        cantidad_de_dinero = match.group(5)
+        moneda = match.group(6)
+        numero_de_transaccion = match.group(7)
+            
+        # Devolver la información extraída
+        return {
+            "desde": desde,
+            "nombre_de_contacto": nombre_de_contacto,
+            "informacion_transferencia": informacion_transferencia,
+            "numero_de_cuenta": numero_de_cuenta,
+            "cantidad_de_dinero": cantidad_de_dinero,
+            "moneda": moneda,
+            "numero_de_transaccion": numero_de_transaccion
+        }
+    except Exception as e:
+        # En caso de error, imprimir el error y retornar None
+        print("Error al procesar cadena:", e)
+        return None
 
 @app.route("/mensajes", methods=["POST"])
 def agregar_mensaje():
