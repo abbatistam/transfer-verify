@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from datetime import datetime, timezone
 from flask_cors import CORS
+from flask_accepts import accepts
 import os
 
 # Configuración de la aplicación Flask
@@ -16,28 +17,30 @@ CORS(app)
 
 # Ruta para agregar un mensaje
 @app.route("/mensajes", methods=["POST"])
+@accepts("application/json", "text/plain")
 def agregar_mensaje():
-    """Agrega un nuevo mensaje a la colección."""
-    try:
-        # Obtener el cuerpo del mensaje de la solicitud
-        message_body = request.get_json()["message_body"]
+    if request.content_type not in ("application/json", "text/plain"):
+        return jsonify({"success": False, "error": "Formato no compatible"}), 400
 
-        # Crear un nuevo documento con timestamp
+    try:
+        if request.content_type == "application/json":
+            message_body = request.get_json()["message_body"]
+        elif request.content_type == "text/plain":
+            message_body = request.data.decode("utf-8")
+
         mensaje = {
             "message_body": message_body,
             "timestamp": datetime.now(timezone.utc),
         }
 
-        # Insertar el documento en la colección
-        messages_collection.insert_one(mensaje)
+        messages_collection.append(mensaje)
 
-        # Responder con éxito
         return jsonify({"success": True}), 201
 
     except Exception as error:
-        # Responder con error
         return jsonify({"success": False, "error": str(error)}), 400
 
+    
 # Iniciar la aplicación Flask
 if __name__ == "__main__":
     app.run(debug=True)
