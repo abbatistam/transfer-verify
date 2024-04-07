@@ -69,11 +69,10 @@ def agregar_mensaje():
         mensaje = {
             "timestamp": datetime.now(timezone.utc),
             "desde": datos_mensaje.get("desde"),
-            "nombre_de_contacto": datos_mensaje.get("nombre_de_contacto"),
-            "informacion_transferencia": datos_mensaje.get("informacion_transferencia"),
+            "numero_de_telefono": datos_mensaje.get("numero_de_telefono"),
             "numero_de_cuenta": datos_mensaje.get("numero_de_cuenta"),
-            "cantidad_de_dinero": datos_mensaje.get("cantidad_de_dinero"),
-            "moneda": datos_mensaje.get("moneda"),
+            "cantidad_moneda": datos_mensaje.get("cantidad_moneda"),
+            "tipo_moneda": datos_mensaje.get("tipo_moneda"),
             "numero_de_transaccion": datos_mensaje.get("numero_de_transaccion")
         }
 
