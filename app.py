@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 from flask_cors import CORS
 import os
 import re
-from urllib.parse import unquote
+import urllib.parse
+
 
 # Configuración de la aplicación Flask
 app = Flask(__name__)
@@ -19,34 +20,28 @@ CORS(app)
 def procesar_cadena(cadena_decodificada):
     try:
         # Decodificar la cadena
-        mensaje_decodificado = unquote(cadena_decodificada)
+        mensaje_decodificado = urllib.parse.unquote(cadena_decodificada).replace('+', ' ')
         
         # Buscar información en el mensaje usando expresiones regulares
-        match = re.search(r"Desde\s*:\s*([^()]+)\(([^()]+)\)\s*([\w\s]+)\s+(\d+)\s+de\s+([0-9.]+)\s+(\w+)\.\s*Nro\.\s+Transaccion\s+(\w+)", mensaje_decodificado)
-        
-        # Si no hay coincidencias, retornar None
-        if not match:
-            return None
-        
-        # Extraer la información
-        desde = match.group(1).strip()
-        nombre_de_contacto = match.group(2).strip()
-        informacion_transferencia = match.group(3).strip()
-        numero_de_cuenta = match.group(4)
-        cantidad_de_dinero = match.group(5)
-        moneda = match.group(6)
-        numero_de_transaccion = match.group(7)
-            
-        # Devolver la información extraída
-        return {
-            "desde": desde,
-            "nombre_de_contacto": nombre_de_contacto,
-            "informacion_transferencia": informacion_transferencia,
-            "numero_de_cuenta": numero_de_cuenta,
-            "cantidad_de_dinero": cantidad_de_dinero,
-            "moneda": moneda,
-            "numero_de_transaccion": numero_de_transaccion
+        matches = {
+            "desde": re.search(r"Desde : (.+)", mensaje_decodificado),
+            "numero_de_telefono": re.search(r"telefono (\d{10})", mensaje_decodificado),
+            "numero_de_cuenta": re.search(r"cuenta (\d+)", mensaje_decodificado),
+            "cantidad_moneda": re.search(r"(\d+\.\d+) (\w+)", mensaje_decodificado),
+            "tipo_moneda": re.search(r"\d+\.\d+\s+(CUP|USD)\.", mensaje_decodificado),
+            "numero_de_transaccion": re.search(r"Nro\. Transaccion (\w+)", mensaje_decodificado)
         }
+        
+        # Extraer la información de las coincidencias
+        informacion = {}
+        for key, match in matches.items():
+            if match:
+                informacion[key] = match.group(1)
+            else:
+                informacion[key] = None
+        
+        return informacion
+        
     except Exception as e:
         # En caso de error, imprimir el error y retornar None
         print("Error al procesar cadena:", e)
@@ -65,7 +60,7 @@ def agregar_mensaje():
         })
         # Procesar el cuerpo del mensaje
         datos_mensaje = procesar_cadena(message_body)
-        
+        print(datos_mensaje)
         # Si no se puede procesar el mensaje, responder con error
         if datos_mensaje is None:
             return jsonify({"success": False, "error": "No se pudo procesar el mensaje"}), 400
