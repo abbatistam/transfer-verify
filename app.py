@@ -61,6 +61,10 @@ def agregar_mensaje():
         # Obtener el cuerpo del mensaje de la solicitud
         message_body = request.get_data(as_text=True)
         print(message_body)
+        messages_collection.insert_one({
+            "timestamp": datetime.now(timezone.utc),
+            "message_body": message_body
+        })
         # Procesar el cuerpo del mensaje
         datos_mensaje = procesar_cadena(message_body)
         
